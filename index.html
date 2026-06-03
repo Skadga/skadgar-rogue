@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Diablo Style | Парящий остров</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ИГРОВОЕ ПОЛЕ -->
+<div class="game-window floating-window" id="gameWindow" style="width: 1024px; height: 640px; top: 0; right: 0;">
+    <div class="window-header">
+        <div class="window-title">🏝️ SKADGAR | ROGUE ISLAND</div>
+        <div class="window-controls">
+            <button class="window-minimize" data-id="gameWindow">─</button>
+            <button class="window-close" data-id="gameWindow" style="display:none;">✕</button>
+        </div>
+    </div>
+    <div class="window-content game-window-content" style="padding:0;">
+        <canvas id="gameCanvas" width="1024" height="640"></canvas>
+    </div>
+    <div class="window-resize-handle"></div>
+</div>
+
+<!-- ПАНЕЛЬ УПРАВЛЕНИЯ ОКНАМИ -->
+<div class="window-controls-bar">
+    <button class="window-control-btn" onclick="toggleWindow('window-stats')">📊 Характеристики</button>
+    <button class="window-control-btn" onclick="toggleWindow('window-controls')">🎮 Управление</button>
+    <button class="window-control-btn" onclick="toggleWindow('window-inventory')">🎒 Инвентарь</button>
+    <button class="window-control-btn" onclick="toggleWindow('window-shop')">🏪 Магазин</button>
+    <button class="window-control-btn" onclick="toggleWindow('window-chat')">💬 Чат</button>
+    <button class="window-control-btn reset-btn" onclick="resetWindowsPosition()">🔄 Сбросить окна</button>
+</div>
+
+<!-- ПЛАВАЮЩИЕ ПОДСКАЗКИ -->
+<div id="portalHint" class="portal-hint" style="display: none;">🌀 ВОЙТИ В ДАНЖ 🌀<br><span>Нажми E или ПКМ</span></div>
+<div id="shopHint" class="shop-hint" style="display: none;">🏪 Нажми G для магазина</div>
+
+<!-- МЕНЮ ПАУЗЫ -->
+<div id="pauseMenu" class="pause-menu" style="display: none;">
+    <div class="pause-content">
+        <h2>⏸️ ПАУЗА</h2>
+        <div id="pauseMainMenu" class="pause-main">
+            <button id="pauseSaveBtn" class="pause-main-btn">💾 СОХРАНИТЬ</button>
+            <button id="pauseLoadBtn" class="pause-main-btn">📂 ЗАГРУЗИТЬ</button>
+            <button id="pauseResetBtn" class="pause-main-btn">🔄 НАЧАТЬ ЗАНОВО</button>
+            <button id="pauseResumeBtn" class="pause-main-btn">▶️ ПРОДОЛЖИТЬ</button>
+        </div>
+        <div id="pauseSaveSubmenu" class="pause-submenu" style="display: none;">
+            <h3>💾 ВЫБЕРИ СЛОТ ДЛЯ СОХРАНЕНИЯ</h3>
+            <div class="pause-slots">
+                <div class="pause-slot" data-slot="1" data-action="save"><div class="pause-slot-info"><span class="slot-title">СЛОТ 1</span><span class="slot-detail" id="saveSlot1Info">Пусто</span></div><button class="pause-slot-select">ВЫБРАТЬ</button></div>
+                <div class="pause-slot" data-slot="2" data-action="save"><div class="pause-slot-info"><span class="slot-title">СЛОТ 2</span><span class="slot-detail" id="saveSlot2Info">Пусто</span></div><button class="pause-slot-select">ВЫБРАТЬ</button></div>
+                <div class="pause-slot" data-slot="3" data-action="save"><div class="pause-slot-info"><span class="slot-title">СЛОТ 3</span><span class="slot-detail" id="saveSlot3Info">Пусто</span></div><button class="pause-slot-select">ВЫБРАТЬ</button></div>
+            </div>
+            <button class="pause-back-btn">◀ НАЗАД</button>
+        </div>
+        <div id="pauseLoadSubmenu" class="pause-submenu" style="display: none;">
+            <h3>📂 ВЫБЕРИ СЛОТ ДЛЯ ЗАГРУЗКИ</h3>
+            <div class="pause-slots">
+                <div class="pause-slot" data-slot="1" data-action="load"><div class="pause-slot-info"><span class="slot-title">СЛОТ 1</span><span class="slot-detail" id="loadSlot1Info">Пусто</span></div><button class="pause-slot-select">ВЫБРАТЬ</button></div>
+                <div class="pause-slot" data-slot="2" data-action="load"><div class="pause-slot-info"><span class="slot-title">СЛОТ 2</span><span class="slot-detail" id="loadSlot2Info">Пусто</span></div><button class="pause-slot-select">ВЫБРАТЬ</button></div>
+                <div class="pause-slot" data-slot="3" data-action="load"><div class="pause-slot-info"><span class="slot-title">СЛОТ 3</span><span class="slot-detail" id="loadSlot3Info">Пусто</span></div><button class="pause-slot-select">ВЫБРАТЬ</button></div>
+            </div>
+            <button class="pause-back-btn">◀ НАЗАД</button>
+        </div>
+        <div class="pause-note">ESC - закрыть меню</div>
+    </div>
+</div>
+
+<!-- МЕНЮ ИНВЕНТАРЯ -->
+<div id="inventoryMenu" class="pause-menu" style="display: none;">
+    <div class="pause-content" style="min-width: 650px;">
+        <h2>🎒 ИНВЕНТАРЬ</h2>
+        
+        <!-- Слоты экипировки -->
+        <div class="inventory-equipment" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
+            <div class="equipment-slot" id="equip-slot-weapon" style="background: rgba(0,0,0,0.5); border: 1px solid #6a3a6a; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer;">
+                <div class="inventory-item empty">⚔️<span class="item-name">Оружие</span></div>
+            </div>
+            <div class="equipment-slot" id="equip-slot-armor" style="background: rgba(0,0,0,0.5); border: 1px solid #6a3a6a; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer;">
+                <div class="inventory-item empty">🛡️<span class="item-name">Броня</span></div>
+            </div>
+            <div class="equipment-slot" id="equip-slot-helmet" style="background: rgba(0,0,0,0.5); border: 1px solid #6a3a6a; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer;">
+                <div class="inventory-item empty">⛑️<span class="item-name">Шлем</span></div>
+            </div>
+            <div class="equipment-slot" id="equip-slot-ring" style="background: rgba(0,0,0,0.5); border: 1px solid #6a3a6a; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer;">
+                <div class="inventory-item empty">💍<span class="item-name">Кольцо</span></div>
+            </div>
+            <div class="equipment-slot" id="equip-slot-amulet" style="background: rgba(0,0,0,0.5); border: 1px solid #6a3a6a; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer;">
+                <div class="inventory-item empty">📿<span class="item-name">Амулет</span></div>
+            </div>
+            <div class="equipment-slot" id="equip-slot-boots" style="background: rgba(0,0,0,0.5); border: 1px solid #6a3a6a; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer;">
+                <div class="inventory-item empty">👢<span class="item-name">Ботинки</span></div>
+            </div>
+        </div>
+        
+        <!-- Статистика инвентаря -->
+        <div class="inventory-stats" style="display: flex; justify-content: space-between; margin-bottom: 10px; padding: 5px 10px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+            <span>💰 <span id="inventoryGold">0</span></span>
+            <span>📦 Свободно: <span id="inventoryFreeSlots">20</span>/20</span>
+        </div>
+        
+        <!-- Список предметов -->
+        <div class="inventory-items-grid" id="inventory-items-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
+        
+        <!-- Кнопка закрытия -->
+        <div class="inventory-footer" style="text-align: center; padding-top: 10px; border-top: 1px solid #6a3a6a;">
+            <button onclick="window.closeInventory()" style="background: #8a2a4a; border: none; color: white; padding: 5px 20px; border-radius: 20px; cursor: pointer;">ЗАКРЫТЬ (I)</button>
+        </div>
+    </div>
+</div>
+
+<!-- СКРИПТЫ -->
+<script src="js/core/utils.js"></script>
+<script src="js/core/animation.js"></script>
+<script src="js/core/camera.js"></script>
+<script src="js/entities/Particle.js"></script>
+<script src="js/combat/Projectile.js"></script>
+<script src="js/entities/Enemy.js"></script>
+<script src="js/entities/Player.js"></script>
+<script src="js/combat/combat.js"></script>
+<script src="js/world/map.js"></script>
+<script src="js/world/portal.js"></script>
+<script src="js/ui/savegame.js"></script>
+<script src="js/world/shop.js"></script>
+<script src="js/ui/inventory.js"></script>
+<script src="js/ui/windows.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/game.js"></script>
+
+<!-- РЕСАЙЗ ИГРОВОГО ОКНА -->
+<script>
+setTimeout(function() {
+    const gameWindow = document.getElementById('gameWindow');
+    if (!gameWindow) return;
+    
+    const resizeHandle = gameWindow.querySelector('.window-resize-handle');
+    const header = gameWindow.querySelector('.window-header');
+    const canvas = document.getElementById('gameCanvas');
+    
+    let isResizing = false;
+    let startX, startY, startWidth, startHeight;
+    
+    resizeHandle.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        isResizing = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = gameWindow.offsetWidth;
+        startHeight = gameWindow.offsetHeight;
+        
+        const onMouseMove = (e) => {
+            if (!isResizing) return;
+            let newWidth = startWidth + (e.clientX - startX);
+            let newHeight = startHeight + (e.clientY - startY);
+            
+            newWidth = Math.max(640, Math.min(window.innerWidth - 20, newWidth));
+            newHeight = Math.max(480, Math.min(window.innerHeight - 20, newHeight));
+            
+            gameWindow.style.width = newWidth + 'px';
+            gameWindow.style.height = newHeight + 'px';
+            
+            if (canvas) {
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                window.WIDTH = newWidth;
+                window.HEIGHT = newHeight;
+                if (typeof window.updateWindowSize === 'function') window.updateWindowSize();
+                if (typeof window.clearCache === 'function') window.clearCache();
+            }
+        };
+        
+        const onMouseUp = () => {
+            isResizing = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+        
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    });
+    
+    let isDragging = false;
+    let dragStartX, dragStartY;
+    let windowStartX, windowStartY;
+    
+    header.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('window-minimize')) return;
+        
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        windowStartX = gameWindow.offsetLeft;
+        windowStartY = gameWindow.offsetTop;
+        
+        const onMouseMove = (e) => {
+            if (!isDragging) return;
+            let newX = windowStartX + (e.clientX - dragStartX);
+            let newY = windowStartY + (e.clientY - dragStartY);
+            
+            newX = Math.max(-gameWindow.offsetWidth + 50, Math.min(window.innerWidth - 50, newX));
+            newY = Math.max(0, Math.min(window.innerHeight - 50, newY));
+            
+            gameWindow.style.left = newX + 'px';
+            gameWindow.style.top = newY + 'px';
+            gameWindow.style.right = 'auto';
+        };
+        
+        const onMouseUp = () => {
+            isDragging = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+        
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    });
+    
+    const minimizeBtn = gameWindow.querySelector('.window-minimize');
+    if (minimizeBtn) {
+        minimizeBtn.addEventListener('click', () => {
+            gameWindow.classList.toggle('minimized');
+        });
+    }
+}, 100);
+</script>
+
+</body>
+</html>
