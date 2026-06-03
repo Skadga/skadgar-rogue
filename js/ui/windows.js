@@ -438,6 +438,7 @@ function initFloatingWindows() {
         `
             <div class="chat-messages" id="chatMessages">
                 <div class="chat-message info">✨ Добро пожаловать на Skadgar, парящий остров!</div>
+				<div class="chat-message info">🎮 Создатель: Skadga | GitHub: skadgar-rogue</div>
             </div>
             <input type="text" id="chatInput" class="chat-input" placeholder="Сообщение... (Enter)">
         `
