@@ -277,22 +277,19 @@ function initInventoryUI() {
 
 // ========== ГЛАВНЫЕ ФУНКЦИИ ОТКРЫТИЯ/ЗАКРЫТИЯ ==========
 window.openInventory = function() {
-    console.log('openInventory called');
-    if (window.isPaused) return;
-    window.isPaused = true;
-    updateInventoryUI();
-    var inventoryMenu = document.getElementById('inventoryMenu');
-    if (inventoryMenu) {
-        inventoryMenu.style.display = 'flex';
-        console.log('Inventory menu opened');
+    if (window.windows && window.windows['window-inventory']) {
+        window.windows['window-inventory'].toggleVisibility();
+        if (typeof updateInventoryUI === 'function') updateInventoryUI();
     }
 };
 
 window.closeInventory = function() {
-    console.log('closeInventory called');
-    window.isPaused = false;
-    var inventoryMenu = document.getElementById('inventoryMenu');
-    if (inventoryMenu) inventoryMenu.style.display = 'none';
+    if (window.windows && window.windows['window-inventory']) {
+        const win = window.windows['window-inventory'];
+        if (win.visible) {
+            win.toggleVisibility();
+        }
+    }
     updateStatsFromEquipment();
     if (typeof updateUI === 'function') updateUI();
 };

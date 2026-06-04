@@ -249,7 +249,9 @@ function enterDungeon() {
     window.player.x = 10;
     window.player.y = 10;
     
-    // ========== ИЗМЕНЕНИЕ: УБРАЛИ СБРОС exploredTiles ==========
+    for (let y = 0; y < MAP_H; y++) {
+        for (let x = 0; x < MAP_W; x++) exploredTiles[y][x] = true;
+    }
     
     spawnDungeonEnemies();
     updateUI();
@@ -278,17 +280,24 @@ function checkDungeonProgress() {
         bossDefeated = true;
         updateGlobalVariables();
         
-        dungeonActive = false;
-        createReturnPortal();
-        addPickupEffect(window.player.x, window.player.y, "ДАНЖ ПРОЙДЕН! ИДИТЕ К ПОРТАЛУ");
+        // ========== ИЗМЕНЕНИЕ: НЕ ВЫХОДИМ ИЗ ДАНЖА, А ДЕЛАЕМ ЕГО БЕЗОПАСНЫМ ==========
+        // dungeonActive = false; // УДАЛИЛИ ЭТУ СТРОКУ!
+        
+        createReturnPortal(); // Создаём портал домой
+        
+        addPickupEffect(window.player.x, window.player.y, "ДАНЖ ПРОЙДЕН! ТЕПЕРЬ ЭТО БЕЗОПАСНАЯ ЗОНА");
         addPickupEffect(window.player.x, window.player.y - 1, "+50 ОПЫТА!");
         addXp(50);
         updateUI();
         updateLocationDisplay();
+        
+        // Убираем оставшихся врагов (если есть)
+        window.enemies = window.enemies.filter(e => e.isBoss === false);
     }
 }
 
 function exitDungeon() {
+    // Если данж пройден, просто выходим
     dungeonActive = false;
     bossSpawned = false;
     bossDefeated = false;
@@ -310,24 +319,30 @@ function exitDungeon() {
     window.player.x = spawnPos.x;
     window.player.y = spawnPos.y;
     
-    // ========== ИЗМЕНЕНИЕ: УБРАЛИ СБРОС exploredTiles ==========
+    for (let y = 0; y < MAP_H; y++) {
+        for (let x = 0; x < MAP_W; x++) exploredTiles[y][x] = true;
+    }
     
     window.enemies = [];
     addPickupEffect(window.player.x, window.player.y, "ВЫ ВЕРНУЛИСЬ ДОМОЙ");
     updateUI();
     updateLocationDisplay();
     
+    // Размещаем торговца только если мы дома
     if (typeof placeShopKeeper === 'function') placeShopKeeper();
 }
 
 function updateLocationDisplay() {
     const locationEl = document.getElementById('locationIndicator');
     if (locationEl) {
-        if (dungeonActive) {
-            locationEl.innerHTML = "ПОДЗЕМЕЛЬЕ (ОПАСНО)";
+        if (dungeonActive && bossDefeated) {
+            locationEl.innerHTML = "🏚️ БЕЗОПАСНОЕ ПОДЗЕМЕЛЬЕ";
+            locationEl.style.color = "#88ff88";
+        } else if (dungeonActive) {
+            locationEl.innerHTML = "🏚️ ПОДЗЕМЕЛЬЕ (ОПАСНО)";
             locationEl.style.color = "#ff6666";
         } else {
-            locationEl.innerHTML = "ДОМ (БЕЗОПАСНО)";
+            locationEl.innerHTML = "🏝️ ПАРЯЩИЙ ОСТРОВ (ДОМ)";
             locationEl.style.color = "#88ff88";
         }
     }
@@ -337,3 +352,10 @@ window.updateLocationDisplay = updateLocationDisplay;
 window.enterDungeon = enterDungeon;
 window.exitDungeon = exitDungeon;
 window.checkDungeonProgress = checkDungeonProgress;
+window.dungeonActive = dungeonActive;
+window.bossDefeated = bossDefeated;
+window.bossSpawned = bossSpawned;
+window.dungeonEnemiesKilled = dungeonEnemiesKilled;
+window.dungeonEnemiesToKill = DUNGEON_MOBS_TO_KILL;
+window.returnPortalPosition = returnPortalPosition;
+window.homePortalPosition = homePortalPosition;

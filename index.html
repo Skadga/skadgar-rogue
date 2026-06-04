@@ -68,45 +68,6 @@
     </div>
 </div>
 
-<!-- МЕНЮ ИНВЕНТАРЯ -->
-<div id="inventoryMenu" class="pause-menu" style="display: none;">
-    <div class="pause-content" style="min-width: 650px;">
-        <h2>🎒 ИНВЕНТАРЬ</h2>
-        
-        <div class="inventory-equipment" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
-            <div class="equipment-slot" id="equip-slot-weapon" style="background: rgba(0,0,0,0.5); border: 1px solid #6a3a6a; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer;">
-                <div class="inventory-item empty">⚔️<span class="item-name">Оружие</span></div>
-            </div>
-            <div class="equipment-slot" id="equip-slot-armor" style="background: rgba(0,0,0,0.5); border: 1px solid #6a3a6a; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer;">
-                <div class="inventory-item empty">🛡️<span class="item-name">Броня</span></div>
-            </div>
-            <div class="equipment-slot" id="equip-slot-helmet" style="background: rgba(0,0,0,0.5); border: 1px solid #6a3a6a; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer;">
-                <div class="inventory-item empty">⛑️<span class="item-name">Шлем</span></div>
-            </div>
-            <div class="equipment-slot" id="equip-slot-ring" style="background: rgba(0,0,0,0.5); border: 1px solid #6a3a6a; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer;">
-                <div class="inventory-item empty">💍<span class="item-name">Кольцо</span></div>
-            </div>
-            <div class="equipment-slot" id="equip-slot-amulet" style="background: rgba(0,0,0,0.5); border: 1px solid #6a3a6a; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer;">
-                <div class="inventory-item empty">📿<span class="item-name">Амулет</span></div>
-            </div>
-            <div class="equipment-slot" id="equip-slot-boots" style="background: rgba(0,0,0,0.5); border: 1px solid #6a3a6a; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer;">
-                <div class="inventory-item empty">👢<span class="item-name">Ботинки</span></div>
-            </div>
-        </div>
-        
-        <div class="inventory-stats" style="display: flex; justify-content: space-between; margin-bottom: 10px; padding: 5px 10px; background: rgba(0,0,0,0.3); border-radius: 8px;">
-            <span>💰 <span id="inventoryGold">0</span></span>
-            <span>📦 Свободно: <span id="inventoryFreeSlots">20</span>/20</span>
-        </div>
-        
-        <div class="inventory-items-grid" id="inventory-items-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
-        
-        <div class="inventory-footer" style="text-align: center; padding-top: 10px; border-top: 1px solid #6a3a6a;">
-            <button onclick="window.closeInventory()" style="background: #8a2a4a; border: none; color: white; padding: 5px 20px; border-radius: 20px; cursor: pointer;">ЗАКРЫТЬ (I)</button>
-        </div>
-    </div>
-</div>
-
 <!-- СКРИПТЫ -->
 <script src="js/core/utils.js"></script>
 <script src="js/core/animation.js"></script>
