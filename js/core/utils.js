@@ -61,7 +61,7 @@ let hoveredPortal = null;
 let isMouseDown = false;
 let moveToMouse = false;
 
-// ========== ИЗМЕНЕНИЕ: ВСЯ КАРТА ВСЕГДА ОТКРЫТА ==========
+// ========== ВСЯ КАРТА ВСЕГДА ОТКРЫТА ==========
 let exploredTiles = Array(MAP_H).fill().map(() => Array(MAP_W).fill(true));
 
 let tilePositionCache = new Map();
@@ -244,7 +244,7 @@ function isInVision(tileX, tileY, playerX, playerY, playerDir) {
     return true;
 }
 
-// ========== ИЗМЕНЕНИЕ: ФУНКЦИЯ БОЛЬШЕ НЕ НУЖНА ==========
+// ========== ФУНКЦИЯ БОЛЬШЕ НЕ НУЖНА ==========
 function updateExploredTiles() {
     // Ничего не делаем — вся карта всегда открыта
     return;
@@ -567,14 +567,11 @@ function drawDungeonAtmosphere() {
 
 function drawMap() {
     if (!ctx || !MAP || MAP.length === 0 || !window.camera) return;
-    // ========== ИЗМЕНЕНИЕ: УБРАЛИ updateExploredTiles() ==========
     
     const isDungeonActive = (typeof dungeonActive !== 'undefined') ? dungeonActive : false;
     
     if (!isDungeonActive) {
-        // Сначала рисуем фон (градиент неба)
         drawSkyBackground();
-        // Затем звёзды, облака и солнце
         drawBackgroundEffects();
     } else {
         ctx.fillStyle = "#0a0a1a";
@@ -584,11 +581,9 @@ function drawMap() {
     for (let y = 0; y < MAP_H; y++) {
         for (let x = 0; x < MAP_W; x++) {
             if (!MAP[y] || MAP[y][x] === undefined) continue;
-            // ========== ИЗМЕНЕНИЕ: УБРАЛИ ПРОВЕРКУ exploredTiles ==========
             
-            const isVisible = isInVision(x, y, window.player.x, window.player.y, window.player.direction);
-            const alpha = isVisible ? 1 : 0.35;
-            ctx.globalAlpha = alpha;
+            // ========== ИЗМЕНЕНИЕ: УБРАЛИ ПРОЗРАЧНОСТЬ ==========
+            ctx.globalAlpha = 1;
             
             const pos = tileToScreenWithCamera(x, y);
             const tileType = MAP[y][x];
@@ -604,7 +599,6 @@ function drawMap() {
                     ctx.fill();
                 }
                 else if (tileType === 1) {
-                    // Земля под дерево — цвет травы
                     ctx.fillStyle = "#4a8c3f";
                     ctx.beginPath();
                     ctx.moveTo(pos.x, pos.y);
@@ -613,11 +607,9 @@ function drawMap() {
                     ctx.lineTo(pos.x - TILE_W/2, pos.y + TILE_H/2);
                     ctx.fill();
                     
-                    // Ствол дерева
                     ctx.fillStyle = "#5a3a2a";
                     ctx.fillRect(pos.x - 8, pos.y - 15, 16, 25);
                     
-                    // Листва — тёмно-зелёная
                     ctx.fillStyle = "#2a6a2a";
                     ctx.beginPath();
                     ctx.ellipse(pos.x, pos.y - 18, 12, 14, 0, 0, Math.PI*2);
@@ -646,7 +638,6 @@ function drawMap() {
                     ctx.fill();
                 }
                 else if (tileType === 24) {
-                    // Земля под дерево — цвет травы
                     ctx.fillStyle = "#4a8c3f";
                     ctx.beginPath();
                     ctx.moveTo(pos.x, pos.y);
@@ -655,11 +646,9 @@ function drawMap() {
                     ctx.lineTo(pos.x - TILE_W/2, pos.y + TILE_H/2);
                     ctx.fill();
                     
-                    // Ствол
                     ctx.fillStyle = "#4a3a2a";
                     ctx.fillRect(pos.x - 6, pos.y - 20, 12, 30);
                     
-                    // Листва — тёмно-зелёная
                     ctx.fillStyle = "#2a6a2a";
                     ctx.beginPath();
                     ctx.ellipse(pos.x, pos.y - 25, 18, 16, 0, 0, Math.PI*2);
@@ -703,14 +692,13 @@ function drawMap() {
                         ctx.beginPath();
                         ctx.ellipse(pos.x, pos.y + 10, 7, 3, 0, 0, Math.PI*2);
                         ctx.fill();
-                        ctx.globalAlpha = alpha;
+                        ctx.globalAlpha = 1;
                     }
                 }
             }
             
             // ========== ПОРТАЛЫ (С ЗЕМЛЁЙ ПОД НИМИ) ==========
             if (tileType === 10 || tileType === 12) {
-                // Сначала рисуем землю под порталом
                 ctx.fillStyle = isDungeonActive ? "#2a2522" : "#4a8c3f";
                 ctx.beginPath();
                 ctx.moveTo(pos.x, pos.y);
@@ -719,7 +707,6 @@ function drawMap() {
                 ctx.lineTo(pos.x - TILE_W/2, pos.y + TILE_H/2);
                 ctx.fill();
                 
-                // Затем сам портал
                 if (tileType === 10) {
                     ctx.fillStyle = "#aa44ff";
                     ctx.globalAlpha = 0.8;
@@ -734,7 +721,7 @@ function drawMap() {
                         ctx.font = "8px monospace";
                         ctx.fillText("В ДАНЖ", pos.x - 14, pos.y + 6);
                     }
-                    ctx.globalAlpha = alpha;
+                    ctx.globalAlpha = 1;
                 }
                 else if (tileType === 12) {
                     ctx.fillStyle = "#ffaa33";
@@ -750,13 +737,30 @@ function drawMap() {
                         ctx.font = "8px monospace";
                         ctx.fillText("ДОМОЙ", pos.x - 13, pos.y + 6);
                     }
-                    ctx.globalAlpha = alpha;
+                    ctx.globalAlpha = 1;
                 }
             }
         }
     }
     
-    // ========== ИЗМЕНЕНИЕ: УБРАЛИ БЛОК С ТЕМНОТОЙ НА НЕВИДИМЫХ КЛЕТКАХ ==========
+    // ========== ЗАТЕМНЕНИЕ НЕВИДИМЫХ КЛЕТОК ==========
+    for (let y = 0; y < MAP_H; y++) {
+        for (let x = 0; x < MAP_W; x++) {
+            if (!MAP[y] || MAP[y][x] === undefined) continue;
+            
+            const isVisible = isInVision(x, y, window.player.x, window.player.y, window.player.direction);
+            if (!isVisible) {
+                const pos = tileToScreenWithCamera(x, y);
+                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+                ctx.lineTo(pos.x + TILE_W/2, pos.y + TILE_H/2);
+                ctx.lineTo(pos.x, pos.y + TILE_H);
+                ctx.lineTo(pos.x - TILE_W/2, pos.y + TILE_H/2);
+                ctx.fill();
+            }
+        }
+    }
     
     ctx.globalAlpha = 1;
     
@@ -832,7 +836,6 @@ function drawMinimap() {
     for (let y = 0; y < MAP_H; y++) {
         for (let x = 0; x < MAP_W; x++) {
             if (!MAP[y]) continue;
-            // ========== ИЗМЕНЕНИЕ: УБРАЛИ ПРОВЕРКУ exploredTiles ==========
             
             let color;
             const tile = MAP[y][x];
