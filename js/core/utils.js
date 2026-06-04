@@ -84,6 +84,8 @@ function initStars() {
 }
 initStars();
 
+// ========== ФУНКЦИИ ФОНА ==========
+
 function drawStars() {
     for (let star of starPositions) {
         ctx.fillStyle = `rgba(255, 255, 220, ${star.alpha * 0.6})`;
@@ -91,6 +93,70 @@ function drawStars() {
         ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
         ctx.fill();
     }
+}
+
+function drawClouds() {
+    const time = Date.now() / 20000;
+    
+    const clouds = [
+        { x: 100, y: 80, size: 60, speed: 0.2 },
+        { x: 350, y: 50, size: 80, speed: 0.15 },
+        { x: 600, y: 100, size: 50, speed: 0.25 },
+        { x: 750, y: 40, size: 70, speed: 0.1 },
+        { x: -50, y: 120, size: 55, speed: 0.18 }
+    ];
+    
+    for (let cloud of clouds) {
+        let cloudX = cloud.x + (time * cloud.speed * 50) % (WIDTH + 200) - 100;
+        
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.2)';
+        
+        ctx.beginPath();
+        ctx.ellipse(cloudX, cloud.y, cloud.size, cloud.size * 0.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.beginPath();
+        ctx.ellipse(cloudX - cloud.size * 0.4, cloud.y - 3, cloud.size * 0.6, cloud.size * 0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(cloudX + cloud.size * 0.4, cloud.y - 3, cloud.size * 0.6, cloud.size * 0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+}
+
+function drawSun() {
+    ctx.fillStyle = '#ffdd88';
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = '#ffaa44';
+    ctx.beginPath();
+    ctx.arc(WIDTH - 80, 60, 40, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = '#ffcc66';
+    for (let i = 0; i < 12; i++) {
+        const angle = (Date.now() / 10000 + i * Math.PI / 6);
+        const x = (WIDTH - 80) + Math.cos(angle) * 55;
+        const y = 60 + Math.sin(angle) * 55;
+        ctx.beginPath();
+        ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+}
+
+function drawBackgroundEffects() {
+    if (!ctx) return;
+    
+    const isDungeonActive = (typeof dungeonActive !== 'undefined') ? dungeonActive : false;
+    if (isDungeonActive) return; // В данже нет звёзд и облаков
+    
+    drawStars();
+    drawClouds();
+    drawSun();
 }
 
 function drawSkyBackground() {
@@ -101,9 +167,9 @@ function drawSkyBackground() {
     gradient.addColorStop(1, '#4a6a9a');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
-    
-    drawStars();
 }
+
+// ========== КОНЕЦ ФУНКЦИЙ ФОНА ==========
 
 function getCachedTilePosition(x, y, z = 0) {
     const key = `${x},${y},${z}`;
@@ -506,7 +572,10 @@ function drawMap() {
     const isDungeonActive = (typeof dungeonActive !== 'undefined') ? dungeonActive : false;
     
     if (!isDungeonActive) {
+        // Сначала рисуем фон (градиент неба)
         drawSkyBackground();
+        // Затем звёзды, облака и солнце
+        drawBackgroundEffects();
     } else {
         ctx.fillStyle = "#0a0a1a";
         ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -639,37 +708,50 @@ function drawMap() {
                 }
             }
             
-            if (tileType === 10) {
-                ctx.fillStyle = "#aa44ff";
-                ctx.globalAlpha = 0.8;
+            // ========== ПОРТАЛЫ (С ЗЕМЛЁЙ ПОД НИМИ) ==========
+            if (tileType === 10 || tileType === 12) {
+                // Сначала рисуем землю под порталом
+                ctx.fillStyle = isDungeonActive ? "#2a2522" : "#4a8c3f";
                 ctx.beginPath();
-                ctx.ellipse(pos.x, pos.y + TILE_H/2 - 5, 14, 9, 0, 0, Math.PI*2);
+                ctx.moveTo(pos.x, pos.y);
+                ctx.lineTo(pos.x + TILE_W/2, pos.y + TILE_H/2);
+                ctx.lineTo(pos.x, pos.y + TILE_H);
+                ctx.lineTo(pos.x - TILE_W/2, pos.y + TILE_H/2);
                 ctx.fill();
-                ctx.fillStyle = "#cc88ff";
-                ctx.font = "bold 22px monospace";
-                ctx.fillText("🌀", pos.x - 9, pos.y - 2);
-                if (!isDungeonActive) {
-                    ctx.fillStyle = "#ffffff";
-                    ctx.font = "8px monospace";
-                    ctx.fillText("В ДАНЖ", pos.x - 14, pos.y + 6);
+                
+                // Затем сам портал
+                if (tileType === 10) {
+                    ctx.fillStyle = "#aa44ff";
+                    ctx.globalAlpha = 0.8;
+                    ctx.beginPath();
+                    ctx.ellipse(pos.x, pos.y + TILE_H/2 - 5, 14, 9, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = "#cc88ff";
+                    ctx.font = "bold 22px monospace";
+                    ctx.fillText("🌀", pos.x - 9, pos.y - 2);
+                    if (!isDungeonActive) {
+                        ctx.fillStyle = "#ffffff";
+                        ctx.font = "8px monospace";
+                        ctx.fillText("В ДАНЖ", pos.x - 14, pos.y + 6);
+                    }
+                    ctx.globalAlpha = alpha;
                 }
-                ctx.globalAlpha = alpha;
-            }
-            else if (tileType === 12) {
-                ctx.fillStyle = "#ffaa33";
-                ctx.globalAlpha = 0.8;
-                ctx.beginPath();
-                ctx.ellipse(pos.x, pos.y + TILE_H/2 - 5, 14, 9, 0, 0, Math.PI*2);
-                ctx.fill();
-                ctx.fillStyle = "#ffdd88";
-                ctx.font = "bold 22px monospace";
-                ctx.fillText("⭐", pos.x - 9, pos.y - 2);
-                if (isDungeonActive) {
-                    ctx.fillStyle = "#ffffff";
-                    ctx.font = "8px monospace";
-                    ctx.fillText("ДОМОЙ", pos.x - 13, pos.y + 6);
+                else if (tileType === 12) {
+                    ctx.fillStyle = "#ffaa33";
+                    ctx.globalAlpha = 0.8;
+                    ctx.beginPath();
+                    ctx.ellipse(pos.x, pos.y + TILE_H/2 - 5, 14, 9, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = "#ffdd88";
+                    ctx.font = "bold 22px monospace";
+                    ctx.fillText("⭐", pos.x - 9, pos.y - 2);
+                    if (isDungeonActive) {
+                        ctx.fillStyle = "#ffffff";
+                        ctx.font = "8px monospace";
+                        ctx.fillText("ДОМОЙ", pos.x - 13, pos.y + 6);
+                    }
+                    ctx.globalAlpha = alpha;
                 }
-                ctx.globalAlpha = alpha;
             }
         }
     }
