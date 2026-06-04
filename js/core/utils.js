@@ -833,6 +833,7 @@ function drawMinimap() {
     const cellSize = size / MAP_W;
     const isDungeonActive = (typeof dungeonActive !== 'undefined') ? dungeonActive : false;
     
+    // ===== ОТРИСОВКА КАРТЫ (кроме врагов) =====
     for (let y = 0; y < MAP_H; y++) {
         for (let x = 0; x < MAP_W; x++) {
             if (!MAP[y]) continue;
@@ -843,26 +844,26 @@ function drawMinimap() {
             if (!isDungeonActive) {
                 if (tile === 0) color = "#5a9e4a";
                 else if (tile === 1) color = "#5a3a2a";
-                else if (tile === 20) color = "#ff69b4";
+                else if (tile === 20) color = "#aa44aa";
                 else if (tile === 21) color = "#3a7c2f";
                 else if (tile === 22) color = "#999999";
-                else if (tile === 23) color = "#dd6633";
+                else if (tile === 23) color = "#aa6644";
                 else if (tile === 24) color = "#2a8c2f";
-                else if (tile === 25) color = "#ff8844";
+                else if (tile === 25) color = "#aa8844";
                 else if (tile === 10) color = "#aa44ff";
                 else if (tile === 12) color = "#ffaa33";
                 else color = "#4a8c3f";
             } else {
                 if (tile === 0) color = "#3a3330";
                 else if (tile === 1) color = "#2a2520";
-                else if (tile === 20) color = "#aa2222";
+                else if (tile === 20) color = "#663333";
                 else if (tile === 21) color = "#ddccaa";
-                else if (tile === 22) color = "#ffaa44";
-                else if (tile === 23) color = "#aa44ff";
+                else if (tile === 22) color = "#aa8844";
+                else if (tile === 23) color = "#6644aa";
                 else if (tile === 24) color = "#3a3a2a";
-                else if (tile === 25) color = "#aa4444";
-                else if (tile === 30) color = "#cc3333";
-                else if (tile === 31) color = "#aa3333";
+                else if (tile === 25) color = "#664444";
+                else if (tile === 30) color = "#883333";
+                else if (tile === 31) color = "#663333";
                 else if (tile === 10) color = "#aa44ff";
                 else if (tile === 12) color = "#ffaa33";
                 else color = "#2a2522";
@@ -878,6 +879,7 @@ function drawMinimap() {
         }
     }
     
+    // ===== ОТРИСОВКА ВРАГОВ (только красным) =====
     if (window.enemies) {
         for (let e of window.enemies) {
             const isVisible = isInVision(e.x, e.y, window.player.x, window.player.y, window.player.direction);
@@ -888,6 +890,7 @@ function drawMinimap() {
         }
     }
     
+    // ===== ИГРОК =====
     ctx.fillStyle = "#88ccff";
     ctx.fillRect(minimapX + window.player.x * cellSize, minimapY + window.player.y * cellSize, cellSize - 0.5, cellSize - 0.5);
     
