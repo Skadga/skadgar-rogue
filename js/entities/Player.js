@@ -296,24 +296,90 @@ function drawPlayerBody() {
     ctx.fillStyle = "#3a6aaa";
     ctx.fillRect(-1, -1, BODY_PROPS.armWidth, BODY_PROPS.armLength);
     
-    if (typeof currentWeapon !== 'undefined') {
-        if (currentWeapon === 'SWORD') {
-            ctx.fillStyle = "#ccccaa";
-            ctx.fillRect(-1, -10, 2, 12);
-        } else if (currentWeapon === 'BOW') {
-            ctx.fillStyle = "#8B6914";
-            ctx.fillRect(-0.5, -8, 1, 12);
-        } else if (currentWeapon === 'STAFF') {
-            ctx.fillStyle = "#8844cc";
-            ctx.fillRect(-0.5, -10, 1, 14);
-            ctx.fillStyle = "#ff8844";
-            ctx.beginPath();
-            ctx.arc(0, -12, 2, 0, Math.PI * 2);
-            ctx.fill();
-        } else {
-            ctx.fillStyle = "#ccccaa";
-            ctx.fillRect(-1, -9, 2, 11);
+    // ========== ОТРИСОВКА ОРУЖИЯ ==========
+    // Проверяем, есть ли оружие в инвентаре
+    let hasWeapon = false;
+    let weaponType = null;
+    let weaponItem = null;
+    
+    if (typeof inventory !== 'undefined' && inventory.slots) {
+        // Ищем слот оружия
+        for (let i = 0; i < inventory.slots.length; i++) {
+            if (inventory.slots[i].type === 'weapon' && inventory.slots[i].item) {
+                hasWeapon = true;
+                weaponItem = inventory.slots[i].item;
+                // Определяем тип оружия по имени предмета
+                const itemName = window.AVAILABLE_ITEMS[weaponItem]?.name || '';
+                if (itemName.includes('Меч')) weaponType = 'SWORD';
+                else if (itemName.includes('Топор')) weaponType = 'AXE';
+                else if (itemName.includes('Булава')) weaponType = 'MACE';
+                else if (itemName.includes('Кинжал')) weaponType = 'DAGGER';
+                else weaponType = 'SWORD'; // По умолчанию
+                break;
+            }
         }
+    }
+    
+    // Рисуем оружие только если оно есть
+    if (hasWeapon && weaponType) {
+        ctx.save();
+        ctx.translate(0, -2);
+        
+        switch(weaponType) {
+            case 'SWORD':
+                // Меч
+                ctx.fillStyle = "#ccccaa";
+                ctx.shadowBlur = 3;
+                ctx.shadowColor = "rgba(200,200,200,0.3)";
+                ctx.fillRect(-1, -12, 2.5, 16);
+                ctx.fillStyle = "#aa8844";
+                ctx.fillRect(-1.5, -2, 3, 4);
+                ctx.shadowBlur = 0;
+                break;
+                
+            case 'AXE':
+                // Топор
+                ctx.fillStyle = "#8B6914";
+                ctx.shadowBlur = 3;
+                ctx.shadowColor = "rgba(100,100,100,0.3)";
+                ctx.fillRect(-0.8, -8, 1.6, 10);
+                ctx.fillStyle = "#a0a0a0";
+                ctx.fillRect(-4, -8, 8, 3);
+                ctx.fillRect(-4, -8, 2, 6);
+                ctx.shadowBlur = 0;
+                break;
+                
+            case 'MACE':
+                // Булава
+                ctx.fillStyle = "#666666";
+                ctx.shadowBlur = 3;
+                ctx.shadowColor = "rgba(100,100,100,0.3)";
+                ctx.fillRect(-0.8, -8, 1.6, 10);
+                ctx.fillStyle = "#888888";
+                ctx.beginPath();
+                ctx.arc(0, -10, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                break;
+                
+            case 'DAGGER':
+                // Кинжал
+                ctx.fillStyle = "#ccccaa";
+                ctx.shadowBlur = 3;
+                ctx.shadowColor = "rgba(200,200,200,0.3)";
+                ctx.fillRect(-0.5, -10, 1, 12);
+                ctx.fillStyle = "#aa8844";
+                ctx.fillRect(-1, -2, 2, 3);
+                ctx.shadowBlur = 0;
+                break;
+                
+            default:
+                // Меч по умолчанию
+                ctx.fillStyle = "#ccccaa";
+                ctx.fillRect(-1, -10, 2, 12);
+                break;
+        }
+        ctx.restore();
     }
     
     ctx.fillStyle = "#ccaa88";

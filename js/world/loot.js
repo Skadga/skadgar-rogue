@@ -16,6 +16,7 @@ function getLootTierByLevel(level) {
     return 'common';
 }
 
+// ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ generateEnemyLoot ==========
 function generateEnemyLoot(enemy) {
     const tier = getLootTierByLevel(window.player.level);
     const loot = LOOT_TIERS[tier];
@@ -31,6 +32,10 @@ function generateEnemyLoot(enemy) {
             addItemToInventory(randomItem);
         }
         addPickupEffect(enemy.x, enemy.y, `✨ ${AVAILABLE_ITEMS[randomItem]?.name || randomItem} найден!`);
+        // ========== ОБНОВЛЯЕМ ИНВЕНТАРЬ ==========
+        if (typeof updateInventoryUI === 'function') {
+            updateInventoryUI();
+        }
     }
     
     // Дополнительный эффект для эпических предметов

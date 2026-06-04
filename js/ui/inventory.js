@@ -1,5 +1,5 @@
 // ========== INVENTORY.JS ==========
-// ИСПРАВЛЕННАЯ ВЕРСИЯ - РАБОТАЕТ ОТКРЫТИЕ/ЗАКРЫТИЕ
+// ИСПРАВЛЕННАЯ ВЕРСИЯ - СРАВНЕНИЕ ПРЕДМЕТОВ + ТУЛТИП
 
 let inventory = {
     slots: [
@@ -34,6 +34,115 @@ const AVAILABLE_ITEMS = {
 
 window.AVAILABLE_ITEMS = AVAILABLE_ITEMS;
 
+// ========== ВСПЛЫВАЮЩАЯ ПОДСКАЗКА ==========
+function showItemTooltip(event, itemId) {
+    var tooltip = document.getElementById('itemTooltip');
+    if (!tooltip) return;
+    
+    var item = AVAILABLE_ITEMS[itemId];
+    if (!item) return;
+    
+    // Находим экипированный предмет того же типа
+    var equippedItem = null;
+    for (var i = 0; i < inventory.slots.length; i++) {
+        if (inventory.slots[i].type === item.type && inventory.slots[i].item) {
+            equippedItem = AVAILABLE_ITEMS[inventory.slots[i].item];
+            break;
+        }
+    }
+    
+    // Формируем содержимое подсказки
+    var nameEl = tooltip.querySelector('.tooltip-name');
+    var statsEl = tooltip.querySelector('.tooltip-stats');
+    var comparisonEl = tooltip.querySelector('.tooltip-comparison');
+    
+    if (nameEl) nameEl.textContent = `${item.icon} ${item.name} (${item.rarity})`;
+    
+    if (statsEl) {
+        var stats = [];
+        if (item.damage) stats.push(`🗡️ +${item.damage} урон`);
+        if (item.armor) stats.push(`🛡️ +${item.armor} броня`);
+        if (item.health) stats.push(`❤️ +${item.health} HP`);
+        if (item.critChance) stats.push(`⭐ +${Math.floor(item.critChance * 100)}% крит`);
+        if (item.speed) stats.push(`💨 +${Math.floor(item.speed * 100)}% скорость`);
+        if (item.price) stats.push(`💰 ${item.price} золота`);
+        statsEl.textContent = stats.join(' | ') || 'Нет бонусов';
+    }
+    
+    // Сравнение с экипированным предметом
+    if (comparisonEl) {
+        if (equippedItem) {
+            var comparison = compareItemsDetailed(item, equippedItem);
+            var html = `<div style="color:#88aaff; font-size:10px;">🔄 Сравнение с экипированным:</div>`;
+            html += `<div style="display:flex; justify-content:space-between; font-size:10px;">`;
+            html += `<span>${item.icon} ${item.name}: <span style="color:#ffdd99;">${comparison.newScore} очков</span></span>`;
+            html += `</div>`;
+            html += `<div style="display:flex; justify-content:space-between; font-size:10px;">`;
+            html += `<span>${equippedItem.icon} ${equippedItem.name}: <span style="color:#ffdd99;">${comparison.currentScore} очков</span></span>`;
+            html += `</div>`;
+            if (comparison.isBetter) {
+                html += `<div class="better">✅ Этот предмет лучше!</div>`;
+            } else if (comparison.isWorse) {
+                html += `<div class="worse">❌ Этот предмет хуже!</div>`;
+            } else {
+                html += `<div class="equal">⚖️ Предметы равны!</div>`;
+            }
+            comparisonEl.innerHTML = html;
+        } else {
+            comparisonEl.innerHTML = `<div style="color:#88ff88;">✅ Слот пуст — можно экипировать!</div>`;
+        }
+    }
+    
+    // Позиционируем подсказку
+    tooltip.style.display = 'block';
+    var x = event.clientX + 15;
+    var y = event.clientY + 15;
+    
+    if (x + 280 > window.innerWidth) x = event.clientX - 280;
+    if (y + 200 > window.innerHeight) y = event.clientY - 200;
+    
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+}
+
+function hideItemTooltip() {
+    var tooltip = document.getElementById('itemTooltip');
+    if (tooltip) tooltip.style.display = 'none';
+}
+
+function attachTooltipEvents() {
+    var items = document.querySelectorAll('.inventory-slot-item');
+    items.forEach(function(el) {
+        // Получаем itemId из кнопки экипировки
+        var equipBtn = el.querySelector('.item-equip-btn');
+        if (equipBtn) {
+            var match = equipBtn.getAttribute('onclick')?.match(/'([^']+)'/);
+            var itemId = match ? match[1] : null;
+            if (itemId) {
+                el.addEventListener('mouseenter', function(e) {
+                    showItemTooltip(e, itemId);
+                });
+                el.addEventListener('mouseleave', function() {
+                    hideItemTooltip();
+                });
+                el.addEventListener('mousemove', function(e) {
+                    var tooltip = document.getElementById('itemTooltip');
+                    if (tooltip && tooltip.style.display === 'block') {
+                        var x = e.clientX + 15;
+                        var y = e.clientY + 15;
+                        if (x + 280 > window.innerWidth) x = e.clientX - 280;
+                        if (y + 200 > window.innerHeight) y = e.clientY - 200;
+                        tooltip.style.left = x + 'px';
+                        tooltip.style.top = y + 'px';
+                    }
+                });
+            }
+        }
+    });
+}
+
+// ========== ОСНОВНЫЕ ФУНКЦИИ ==========
+
 function updateInventoryUI() {
     var canSell = (typeof shopKeeper !== 'undefined' && shopKeeper.isNearby === true);
     
@@ -43,12 +152,7 @@ function updateInventoryUI() {
         if (slotEl) {
             if (slot.item && AVAILABLE_ITEMS[slot.item]) {
                 var item = AVAILABLE_ITEMS[slot.item];
-                var sellPrice = Math.floor(item.price * 0.5);
-                if (canSell) {
-                    slotEl.innerHTML = '<div class="inventory-item equipped" data-item="' + slot.item + '">' + item.icon + '<span class="item-name">' + item.name + '</span><button class="sell-equipped-btn" onclick="window.sellEquippedItem(\'' + slot.type + '\')">💰 ' + sellPrice + '</button></div>';
-                } else {
-                    slotEl.innerHTML = '<div class="inventory-item equipped" data-item="' + slot.item + '">' + item.icon + '<span class="item-name">' + item.name + '</span></div>';
-                }
+                slotEl.innerHTML = '<div class="inventory-item equipped" data-item="' + slot.item + '">' + item.icon + '<span class="item-name">' + item.name + '</span></div>';
                 slotEl.style.borderColor = getRarityColor(item.rarity);
             } else {
                 slotEl.innerHTML = '<div class="inventory-item empty">' + slot.icon + '<span class="item-name">Пусто</span></div>';
@@ -83,6 +187,9 @@ function updateInventoryUI() {
     
     var freeSlotsSpan = document.getElementById('inventoryFreeSlots');
     if (freeSlotsSpan) freeSlotsSpan.textContent = inventory.maxSlots - inventory.items.length;
+    
+    // Привязываем события тултипа после обновления
+    setTimeout(attachTooltipEvents, 50);
 }
 
 function getItemStatsText(item) {
@@ -120,11 +227,30 @@ function equipItem(itemId) {
     }
     if (slotIndex === -1) return;
     
-    if (inventory.slots[slotIndex].item) {
-        inventory.items.push(inventory.slots[slotIndex].item);
+    var slot = inventory.slots[slotIndex];
+    
+    // Если в слоте уже есть предмет — сравниваем
+    if (slot.item) {
+        var currentItem = AVAILABLE_ITEMS[slot.item];
+        var comparison = compareItemsDetailed(item, currentItem);
+        
+        // Показываем сравнение
+        var msg = `📊 Сравнение:\n`;
+        msg += `🆕 ${item.name}: ${comparison.newScore} очков\n`;
+        msg += `🔄 ${currentItem.name}: ${comparison.currentScore} очков\n`;
+        if (comparison.newScore > comparison.currentScore) {
+            msg += `✅ ${item.name} лучше!`;
+        } else if (comparison.newScore < comparison.currentScore) {
+            msg += `❌ ${currentItem.name} лучше!`;
+        } else {
+            msg += `⚖️ Предметы равны!`;
+        }
+        addPickupEffect(window.player.x, window.player.y, msg);
+        return;
     }
     
-    inventory.slots[slotIndex].item = itemId;
+    // Если слот пуст — просто экипируем
+    slot.item = itemId;
     
     var itemIndex = inventory.items.indexOf(itemId);
     if (itemIndex !== -1) inventory.items.splice(itemIndex, 1);
@@ -133,6 +259,31 @@ function equipItem(itemId) {
     updateStatsFromEquipment();
     if (typeof updateUI === 'function') updateUI();
     if (typeof addPickupEffect === 'function') addPickupEffect(window.player.x, window.player.y, 'Экипировано: ' + item.name);
+}
+
+function compareItemsDetailed(newItem, currentItem) {
+    var newScore = 0;
+    var currentScore = 0;
+    
+    if (newItem.damage) newScore += newItem.damage * 2;
+    if (currentItem.damage) currentScore += currentItem.damage * 2;
+    
+    if (newItem.armor) newScore += newItem.armor * 2;
+    if (currentItem.armor) currentScore += currentItem.armor * 2;
+    
+    if (newItem.health) newScore += newItem.health;
+    if (currentItem.health) currentScore += currentItem.health;
+    
+    if (newItem.critChance) newScore += newItem.critChance * 10;
+    if (currentItem.critChance) currentScore += currentItem.critChance * 10;
+    
+    return {
+        newScore: newScore,
+        currentScore: currentScore,
+        isBetter: newScore > currentScore,
+        isWorse: newScore < currentScore,
+        isEqual: newScore === currentScore
+    };
 }
 
 function unequipItem(slotType) {
@@ -192,6 +343,9 @@ function addItemToInventory(itemId) {
     }
     inventory.items.push(itemId);
     if (typeof addPickupEffect === 'function') addPickupEffect(window.player.x, window.player.y, 'Найден: ' + AVAILABLE_ITEMS[itemId].name);
+    if (typeof updateInventoryUI === 'function') {
+        updateInventoryUI();
+    }
     return true;
 }
 
@@ -229,42 +383,6 @@ function sellItem(itemId) {
     }
 }
 
-function sellEquippedItem(slotType) {
-    if (typeof shopKeeper !== 'undefined' && shopKeeper.isNearby !== true) {
-        if (typeof addPickupEffect === 'function') addPickupEffect(window.player.x, window.player.y, 'Подойди к торговцу, чтобы продать предметы!');
-        return;
-    }
-    
-    var slot = null;
-    for (var i = 0; i < inventory.slots.length; i++) {
-        if (inventory.slots[i].type === slotType) {
-            slot = inventory.slots[i];
-            break;
-        }
-    }
-    if (!slot || !slot.item) {
-        if (typeof addPickupEffect === 'function') addPickupEffect(window.player.x, window.player.y, 'Нет предмета в этом слоте!');
-        return;
-    }
-    
-    var itemId = slot.item;
-    var item = AVAILABLE_ITEMS[itemId];
-    if (!item) return;
-    
-    var sellPrice = Math.floor(item.price * 0.5);
-    
-    slot.item = null;
-    
-    window.player.gold = (window.player.gold || 0) + sellPrice;
-    
-    updateInventoryUI();
-    updateStatsFromEquipment();
-    if (typeof updateUI === 'function') updateUI();
-    if (typeof addPickupEffect === 'function') addPickupEffect(window.player.x, window.player.y, 'Продано: ' + item.name + ' за ' + sellPrice + '💰');
-    
-    if (typeof updateShopUI === 'function') updateShopUI();
-}
-
 function initInventoryUI() {
     var inventoryBtn = document.getElementById('inventoryBtn');
     if (inventoryBtn) {
@@ -275,11 +393,14 @@ function initInventoryUI() {
     console.log('initInventoryUI completed');
 }
 
-// ========== ГЛАВНЫЕ ФУНКЦИИ ОТКРЫТИЯ/ЗАКРЫТИЯ ==========
 window.openInventory = function() {
     if (window.windows && window.windows['window-inventory']) {
-        window.windows['window-inventory'].toggleVisibility();
-        if (typeof updateInventoryUI === 'function') updateInventoryUI();
+        if (window.windows['window-inventory'].visible) {
+            if (typeof updateInventoryUI === 'function') updateInventoryUI();
+        } else {
+            window.windows['window-inventory'].toggleVisibility();
+            if (typeof updateInventoryUI === 'function') updateInventoryUI();
+        }
     }
 };
 
@@ -302,8 +423,10 @@ window.addItemToInventory = addItemToInventory;
 window.dropRandomItem = dropRandomItem;
 window.initInventoryUI = initInventoryUI;
 window.sellItem = sellItem;
-window.sellEquippedItem = sellEquippedItem;
 window.updateInventoryUI = updateInventoryUI;
 window.AVAILABLE_ITEMS = AVAILABLE_ITEMS;
+window.compareItemsDetailed = compareItemsDetailed;
+window.showItemTooltip = showItemTooltip;
+window.hideItemTooltip = hideItemTooltip;
 
 console.log('inventory.js loaded, openInventory defined:', typeof window.openInventory);

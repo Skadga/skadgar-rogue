@@ -759,28 +759,51 @@ body {
     display: block;
 }
 
-/* Скрываем старый контейнер */
-.game-container {
-    display: none;
+/* ========== ВСПЛЫВАЮЩАЯ ПОДСКАЗКА ПРЕДМЕТА ========== */
+.item-tooltip {
+    position: fixed;
+    background: rgba(10, 10, 20, 0.95);
+    border: 1px solid #aa3355;
+    border-radius: 10px;
+    padding: 12px 15px;
+    color: #ffcc88;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+    z-index: 9999;
+    pointer-events: none;
+    max-width: 280px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
 }
 
-/* ========== ДОПОЛНИТЕЛЬНЫЕ КНОПКИ ========== */
-.save-pos-btn {
-    background: #2a6a4a !important;
-    border-color: #88ff88 !important;
+.tooltip-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffdd99;
+    margin-bottom: 5px;
 }
 
-.save-pos-btn:hover {
-    background: #3a8a5a !important;
+.tooltip-stats {
+    font-size: 11px;
+    color: #ccaa88;
+    margin-bottom: 8px;
 }
 
-.load-pos-btn {
-    background: #2a4a6a !important;
-    border-color: #88aaff !important;
+.tooltip-comparison {
+    border-top: 1px solid rgba(170, 51, 85, 0.3);
+    padding-top: 6px;
+    font-size: 11px;
 }
 
-.load-pos-btn:hover {
-    background: #3a5a8a !important;
+.tooltip-comparison .better {
+    color: #88ff88;
+}
+
+.tooltip-comparison .worse {
+    color: #ff8888;
+}
+
+.tooltip-comparison .equal {
+    color: #ffaa44;
 }
 
 /* ========== СКРОЛЛБАРЫ ========== */

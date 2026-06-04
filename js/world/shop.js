@@ -63,14 +63,12 @@ function placeShopKeeper() {
     }
 }
 
-// ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ openShop ==========
 function openShop() {
     if (typeof dungeonActive !== 'undefined' && dungeonActive) {
         addPickupEffect(window.player.x, window.player.y, "Торговец только дома!");
         return;
     }
     
-    // Открываем плавающее окно магазина
     if (window.windows && window.windows['window-shop']) {
         updateShopUI();
         window.windows['window-shop'].toggleVisibility();
@@ -80,10 +78,8 @@ function openShop() {
     }
 }
 
-// ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ closeShop ==========
 function closeShop() {
     if (window.windows && window.windows['window-shop']) {
-        // Если окно видимо, закрываем его
         const win = window.windows['window-shop'];
         if (win.visible) {
             win.toggleVisibility();
@@ -94,17 +90,14 @@ function closeShop() {
 }
 
 function updateShopUI() {
-    // Обновляем отображение золота
     const goldEl = document.getElementById('playerGoldShop');
     if (goldEl) goldEl.textContent = window.player.gold || 0;
     
-    // Зелья здоровья
     const healthPriceSpan = document.getElementById('healthPotionPrice');
     const healthCountSpan = document.getElementById('healthPotionCount');
     if (healthPriceSpan) healthPriceSpan.textContent = shopInventory.healthPotions.price;
     if (healthCountSpan) healthCountSpan.textContent = playerPotions.health;
     
-    // Улучшение брони
     const armorPriceSpan = document.getElementById('armorUpgradePrice');
     const armorValueSpan = document.getElementById('armorUpgradeValue');
     if (armorPriceSpan) {
@@ -114,7 +107,6 @@ function updateShopUI() {
     }
     if (armorValueSpan) armorValueSpan.textContent = shopInventory.armorUpgrade.currentUpgrade;
     
-    // Улучшение урона
     const damagePriceSpan = document.getElementById('damageUpgradePrice');
     const damageValueSpan = document.getElementById('damageUpgradeValue');
     if (damagePriceSpan) {
@@ -124,7 +116,6 @@ function updateShopUI() {
     }
     if (damageValueSpan) damageValueSpan.textContent = shopInventory.damageUpgrade.currentUpgrade;
     
-    // Обновляем цены на оружие
     updateWeaponPrices();
 }
 
@@ -219,7 +210,7 @@ function buyDamageUpgrade() {
     }
 }
 
-// Купить оружие
+// ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ buyWeapon ==========
 function buyWeapon(weaponId) {
     const gold = window.player.gold || 0;
     const weapon = shopInventory.weapons[weaponId];
@@ -251,6 +242,10 @@ function buyWeapon(weaponId) {
         
         updateUI();
         updateShopUI();
+        // ========== ОБНОВЛЯЕМ ИНВЕНТАРЬ ==========
+        if (typeof updateInventoryUI === 'function') {
+            updateInventoryUI();
+        }
         addPickupEffect(window.player.x, window.player.y, `Куплено: ${weapon.name}!`);
     } else {
         addPickupEffect(window.player.x, window.player.y, `Не хватает золота! Нужно ${price}`);
