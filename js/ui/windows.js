@@ -288,16 +288,27 @@ class DraggableWindow {
         if (windowDiv) {
             const contentDiv = windowDiv.querySelector('.window-content');
             if (contentDiv) contentDiv.innerHTML = newContent;
-            this.initAutoAttackButtons();
         }
     }
 }
 
 let windows = {};
 
+// ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ toggleWindow ==========
 function toggleWindow(windowId) {
     if (windows[windowId]) {
         windows[windowId].toggleVisibility();
+        
+        // Обновляем содержимое окон при открытии
+        if (windowId === 'window-inventory' && typeof updateInventoryUI === 'function') {
+            updateInventoryUI();
+        }
+        if (windowId === 'window-shop' && typeof updateShopUI === 'function') {
+            updateShopUI();
+        }
+        if (windowId === 'window-stats' && typeof updateUI === 'function') {
+            updateUI();
+        }
     }
 }
 
