@@ -249,9 +249,7 @@ function enterDungeon() {
     window.player.x = 10;
     window.player.y = 10;
     
-    for (let y = 0; y < MAP_H; y++) {
-        for (let x = 0; x < MAP_W; x++) exploredTiles[y][x] = false;
-    }
+    // ========== ИЗМЕНЕНИЕ: УБРАЛИ СБРОС exploredTiles ==========
     
     spawnDungeonEnemies();
     updateUI();
@@ -312,16 +310,13 @@ function exitDungeon() {
     window.player.x = spawnPos.x;
     window.player.y = spawnPos.y;
     
-    for (let y = 0; y < MAP_H; y++) {
-        for (let x = 0; x < MAP_W; x++) exploredTiles[y][x] = false;
-    }
+    // ========== ИЗМЕНЕНИЕ: УБРАЛИ СБРОС exploredTiles ==========
     
     window.enemies = [];
     addPickupEffect(window.player.x, window.player.y, "ВЫ ВЕРНУЛИСЬ ДОМОЙ");
     updateUI();
     updateLocationDisplay();
     
-    // Размещаем торговца после выхода из данжа
     if (typeof placeShopKeeper === 'function') placeShopKeeper();
 }
 

@@ -308,9 +308,7 @@ function resetGame() {
     if (typeof particleSystem !== 'undefined' && particleSystem) particleSystem.clear();
     window.projectiles = [];
     
-    for (let y = 0; y < MAP_H; y++) {
-        for (let x = 0; x < MAP_W; x++) exploredTiles[y][x] = false;
-    }
+    // ========== ИЗМЕНЕНИЕ: УБРАЛИ СБРОС exploredTiles ==========
     
     window.enemies = [];
     if (typeof updateUI === 'function') updateUI();

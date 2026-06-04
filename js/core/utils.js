@@ -61,7 +61,8 @@ let hoveredPortal = null;
 let isMouseDown = false;
 let moveToMouse = false;
 
-let exploredTiles = Array(MAP_H).fill().map(() => Array(MAP_W).fill(false));
+// ========== ИЗМЕНЕНИЕ: ВСЯ КАРТА ВСЕГДА ОТКРЫТА ==========
+let exploredTiles = Array(MAP_H).fill().map(() => Array(MAP_W).fill(true));
 
 let tilePositionCache = new Map();
 let losCache = new Map();
@@ -177,18 +178,10 @@ function isInVision(tileX, tileY, playerX, playerY, playerDir) {
     return true;
 }
 
+// ========== ИЗМЕНЕНИЕ: ФУНКЦИЯ БОЛЬШЕ НЕ НУЖНА ==========
 function updateExploredTiles() {
-    if (!MAP || !window.player) return;
-    if (frameCount % 2 !== 0) return;
-    
-    const px = window.player.x, py = window.player.y;
-    const dir = window.player.direction;
-    
-    for (let y = Math.max(0, py - VISION_RADIUS); y <= Math.min(MAP_H - 1, py + VISION_RADIUS); y++) {
-        for (let x = Math.max(0, px - VISION_RADIUS); x <= Math.min(MAP_W - 1, px + VISION_RADIUS); x++) {
-            if (isInVision(x, y, px, py, dir)) exploredTiles[y][x] = true;
-        }
-    }
+    // Ничего не делаем — вся карта всегда открыта
+    return;
 }
 
 function hasLineOfSight(x1, y1, x2, y2) {
@@ -508,7 +501,7 @@ function drawDungeonAtmosphere() {
 
 function drawMap() {
     if (!ctx || !MAP || MAP.length === 0 || !window.camera) return;
-    updateExploredTiles();
+    // ========== ИЗМЕНЕНИЕ: УБРАЛИ updateExploredTiles() ==========
     
     const isDungeonActive = (typeof dungeonActive !== 'undefined') ? dungeonActive : false;
     
@@ -522,7 +515,7 @@ function drawMap() {
     for (let y = 0; y < MAP_H; y++) {
         for (let x = 0; x < MAP_W; x++) {
             if (!MAP[y] || MAP[y][x] === undefined) continue;
-            if (!exploredTiles[y][x]) continue;
+            // ========== ИЗМЕНЕНИЕ: УБРАЛИ ПРОВЕРКУ exploredTiles ==========
             
             const isVisible = isInVision(x, y, window.player.x, window.player.y, window.player.direction);
             const alpha = isVisible ? 1 : 0.35;
@@ -657,22 +650,8 @@ function drawMap() {
         }
     }
     
-    for (let y = 0; y < MAP_H; y++) {
-        for (let x = 0; x < MAP_W; x++) {
-            if (!exploredTiles[y][x]) continue;
-            const isVisible = isInVision(x, y, window.player.x, window.player.y, window.player.direction);
-            if (!isVisible) {
-                const pos = tileToScreenWithCamera(x, y);
-                ctx.fillStyle = "rgba(0,0,0,0.65)";
-                ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y);
-                ctx.lineTo(pos.x + TILE_W/2, pos.y + TILE_H/2);
-                ctx.lineTo(pos.x, pos.y + TILE_H);
-                ctx.lineTo(pos.x - TILE_W/2, pos.y + TILE_H/2);
-                ctx.fill();
-            }
-        }
-    }
+    // ========== ИЗМЕНЕНИЕ: УБРАЛИ БЛОК С ТЕМНОТОЙ НА НЕВИДИМЫХ КЛЕТКАХ ==========
+    
     ctx.globalAlpha = 1;
     
     if (typeof drawShopKeeper === 'function') drawShopKeeper();
@@ -747,7 +726,7 @@ function drawMinimap() {
     for (let y = 0; y < MAP_H; y++) {
         for (let x = 0; x < MAP_W; x++) {
             if (!MAP[y]) continue;
-            if (!exploredTiles[y][x]) continue;
+            // ========== ИЗМЕНЕНИЕ: УБРАЛИ ПРОВЕРКУ exploredTiles ==========
             
             let color;
             const tile = MAP[y][x];
@@ -793,7 +772,7 @@ function drawMinimap() {
     if (window.enemies) {
         for (let e of window.enemies) {
             const isVisible = isInVision(e.x, e.y, window.player.x, window.player.y, window.player.direction);
-            if (isVisible && exploredTiles[Math.floor(e.y)] && exploredTiles[Math.floor(e.y)][Math.floor(e.x)]) {
+            if (isVisible) {
                 ctx.fillStyle = e.isBoss ? "#ff8800" : "#ff3333";
                 ctx.fillRect(minimapX + e.x * cellSize, minimapY + e.y * cellSize, cellSize - 0.5, cellSize - 0.5);
             }

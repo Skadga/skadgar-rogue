@@ -63,23 +63,32 @@ function placeShopKeeper() {
     }
 }
 
+// ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ openShop ==========
 function openShop() {
     if (typeof dungeonActive !== 'undefined' && dungeonActive) {
         addPickupEffect(window.player.x, window.player.y, "Торговец только дома!");
         return;
     }
     
-    const shopMenu = document.getElementById('shopMenu');
-    if (shopMenu) {
+    // Открываем плавающее окно магазина
+    if (window.windows && window.windows['window-shop']) {
         updateShopUI();
-        shopMenu.style.display = 'flex';
+        window.windows['window-shop'].toggleVisibility();
         if (typeof isPaused !== 'undefined') isPaused = true;
+    } else {
+        addPickupEffect(window.player.x, window.player.y, "Окно магазина не найдено!");
     }
 }
 
+// ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ closeShop ==========
 function closeShop() {
-    const shopMenu = document.getElementById('shopMenu');
-    if (shopMenu) shopMenu.style.display = 'none';
+    if (window.windows && window.windows['window-shop']) {
+        // Если окно видимо, закрываем его
+        const win = window.windows['window-shop'];
+        if (win.visible) {
+            win.toggleVisibility();
+        }
+    }
     if (typeof isPaused !== 'undefined') isPaused = false;
     updateUI();
 }
@@ -284,7 +293,6 @@ function checkShopKeeperProximity() {
 function drawShopKeeper() {
     if (!ctx || !shopKeeper.x) return;
     if (typeof dungeonActive !== 'undefined' && dungeonActive) return;
-    if (!exploredTiles[shopKeeper.y]?.[shopKeeper.x]) return;
     if (!isInVision(shopKeeper.x, shopKeeper.y, window.player.x, window.player.y, window.player.direction)) return;
     
     const pos = tileToScreenWithCamera(shopKeeper.x, shopKeeper.y);

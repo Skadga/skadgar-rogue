@@ -86,16 +86,18 @@ class DraggableWindow {
     }
     
     updateDynamicElements() {
-    setTimeout(() => {
-        if (this.id === 'window-stats') {
-            this.updateStatsElements();
-        }
-        if (this.id === 'window-inventory' && window.updateInventoryUI) {
-            window.updateInventoryUI();
-        }
-    }, 50);
-	}
-
+        setTimeout(() => {
+            if (this.id === 'window-stats') {
+                this.updateStatsElements();
+            }
+            if (this.id === 'window-inventory' && window.updateInventoryUI) {
+                window.updateInventoryUI();
+            }
+            if (this.id === 'window-shop' && window.updateShopUI) {
+                window.updateShopUI();
+            }
+        }, 50);
+    }
     
     updateStatsElements() {}
     
@@ -345,41 +347,41 @@ function initFloatingWindows() {
     );
     
     windows['window-controls'] = new DraggableWindow(
-    'window-controls',
-    '🎮 УПРАВЛЕНИЕ',
-    20, 460, 260, 470,
-    `
-        <div class="control-row">🖱️ ЛКМ (зажать) - движение</div>
-        <div class="control-row">🖱️ ПКМ - атака / портал</div>
-        <div class="control-row">⚡ Криты → искры! 💥</div>
-        <div class="control-row">⌨️ I - инвентарь</div>
-        <div class="control-row">⌨️ G - магазин</div>
-        <div class="control-row">⌨️ E - портал</div>
-        <div class="control-row">⌨️ R - рестарт</div>
-        <div class="control-row">⌨️ ESC - меню</div>
-        <div class="control-row" style="margin-top: 8px; text-align: center;">
-            <button id="autoAttackBtn" class="auto-attack-btn" style="
-                background: linear-gradient(135deg, #6a2a4a, #4a1a3a);
-                border: 1px solid #aa3355;
-                color: #ffcc88;
-                padding: 8px 16px;
-                border-radius: 25px;
-                cursor: pointer;
-                font-family: 'Courier New', monospace;
-                font-size: 12px;
-                font-weight: bold;
-                width: 100%;
-                transition: all 0.2s;
-            ">⚔️ АВТО-АТАКА</button>
-        </div>
-        <div class="control-row" id="autoAttackStatus" style="text-align: center; background: rgba(0,0,0,0.3); border-radius: 8px; margin-top: 8px; padding: 4px; color: #ffaa66;">
-            ⚔️ СТАТУС: <span id="autoAttackStatusSpan" style="color:#ff8888">ВЫКЛ</span>
-        </div>
-        <div class="control-row" id="musicIndicator">🎵 Музыка...</div>
-        <div class="control-row">🖱️ Тяни за угол окна - меняй размер</div>
-        <div class="control-row">💾 Позиции окон сохраняются автоматически</div>
-    `
-);
+        'window-controls',
+        '🎮 УПРАВЛЕНИЕ',
+        20, 460, 260, 470,
+        `
+            <div class="control-row">🖱️ ЛКМ (зажать) - движение</div>
+            <div class="control-row">🖱️ ПКМ - атака / портал</div>
+            <div class="control-row">⚡ Криты → искры! 💥</div>
+            <div class="control-row">⌨️ I - инвентарь</div>
+            <div class="control-row">⌨️ G - магазин</div>
+            <div class="control-row">⌨️ E - портал</div>
+            <div class="control-row">⌨️ R - рестарт</div>
+            <div class="control-row">⌨️ ESC - меню</div>
+            <div class="control-row" style="margin-top: 8px; text-align: center;">
+                <button id="autoAttackBtn" class="auto-attack-btn" style="
+                    background: linear-gradient(135deg, #6a2a4a, #4a1a3a);
+                    border: 1px solid #aa3355;
+                    color: #ffcc88;
+                    padding: 8px 16px;
+                    border-radius: 25px;
+                    cursor: pointer;
+                    font-family: 'Courier New', monospace;
+                    font-size: 12px;
+                    font-weight: bold;
+                    width: 100%;
+                    transition: all 0.2s;
+                ">⚔️ АВТО-АТАКА</button>
+            </div>
+            <div class="control-row" id="autoAttackStatus" style="text-align: center; background: rgba(0,0,0,0.3); border-radius: 8px; margin-top: 8px; padding: 4px; color: #ffaa66;">
+                ⚔️ СТАТУС: <span id="autoAttackStatusSpan" style="color:#ff8888">ВЫКЛ</span>
+            </div>
+            <div class="control-row" id="musicIndicator">🎵 Музыка...</div>
+            <div class="control-row">🖱️ Тяни за угол окна - меняй размер</div>
+            <div class="control-row">💾 Позиции окон сохраняются автоматически</div>
+        `
+    );
     
     windows['window-inventory'] = new DraggableWindow(
         'window-inventory',
@@ -423,7 +425,99 @@ function initFloatingWindows() {
         window.innerWidth - 500, 540, 450, 450,
         `
             <div class="shop-dialog">"Путник, нужны припасы? Золото решает всё!"</div>
-            <div class="shop-inventory" id="shop-items-list"></div>
+            <div class="shop-inventory" id="shop-items-list">
+                <!-- Зелья здоровья -->
+                <div class="shop-item">
+                    <div class="shop-item-icon">🧪</div>
+                    <div class="shop-item-info">
+                        <div class="shop-item-name">Зелье здоровья</div>
+                        <div class="shop-item-desc">Восстанавливает 30 HP</div>
+                    </div>
+                    <div class="shop-item-controls">
+                        <div class="shop-item-price" id="healthPotionPrice">50💰</div>
+                        <div style="display:flex; gap:5px;">
+                            <button class="shop-buy-btn" onclick="window.buyHealthPotion()">Купить</button>
+                            <button class="shop-use-btn" onclick="window.useHealthPotion()">Использовать</button>
+                            <span style="color:#ffcc88; font-size:11px;">x<span id="healthPotionCount">3</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Улучшение брони -->
+                <div class="shop-item">
+                    <div class="shop-item-icon">🛡️</div>
+                    <div class="shop-item-info">
+                        <div class="shop-item-name">Улучшение брони</div>
+                        <div class="shop-item-desc">+3 к броне (уровень: <span id="armorUpgradeValue">0</span>)</div>
+                    </div>
+                    <div class="shop-item-controls">
+                        <div class="shop-item-price" id="armorUpgradePrice">100💰</div>
+                        <button class="shop-buy-btn" onclick="window.buyArmorUpgrade()">Улучшить</button>
+                    </div>
+                </div>
+                
+                <!-- Улучшение урона -->
+                <div class="shop-item">
+                    <div class="shop-item-icon">⚔️</div>
+                    <div class="shop-item-info">
+                        <div class="shop-item-name">Улучшение урона</div>
+                        <div class="shop-item-desc">+4 к урону (уровень: <span id="damageUpgradeValue">0</span>)</div>
+                    </div>
+                    <div class="shop-item-controls">
+                        <div class="shop-item-price" id="damageUpgradePrice">120💰</div>
+                        <button class="shop-buy-btn" onclick="window.buyDamageUpgrade()">Улучшить</button>
+                    </div>
+                </div>
+                
+                <!-- Оружие -->
+                <div class="shop-item">
+                    <div class="shop-item-icon">⚔️</div>
+                    <div class="shop-item-info">
+                        <div class="shop-item-name">Меч</div>
+                        <div class="shop-item-desc">+10 к урону</div>
+                    </div>
+                    <div class="shop-item-controls">
+                        <div class="shop-item-price" id="swordPrice">80💰</div>
+                        <button class="shop-buy-btn" onclick="window.buyWeapon('sword')">Купить</button>
+                    </div>
+                </div>
+                
+                <div class="shop-item">
+                    <div class="shop-item-icon">🪓</div>
+                    <div class="shop-item-info">
+                        <div class="shop-item-name">Топор</div>
+                        <div class="shop-item-desc">+12 к урону</div>
+                    </div>
+                    <div class="shop-item-controls">
+                        <div class="shop-item-price" id="axePrice">100💰</div>
+                        <button class="shop-buy-btn" onclick="window.buyWeapon('axe')">Купить</button>
+                    </div>
+                </div>
+                
+                <div class="shop-item">
+                    <div class="shop-item-icon">🗡️</div>
+                    <div class="shop-item-info">
+                        <div class="shop-item-name">Кинжал</div>
+                        <div class="shop-item-desc">+8 к урону</div>
+                    </div>
+                    <div class="shop-item-controls">
+                        <div class="shop-item-price" id="daggerPrice">60💰</div>
+                        <button class="shop-buy-btn" onclick="window.buyWeapon('dagger')">Купить</button>
+                    </div>
+                </div>
+                
+                <div class="shop-item">
+                    <div class="shop-item-icon">🔨</div>
+                    <div class="shop-item-info">
+                        <div class="shop-item-name">Булава</div>
+                        <div class="shop-item-desc">+14 к урону</div>
+                    </div>
+                    <div class="shop-item-controls">
+                        <div class="shop-item-price" id="macePrice">120💰</div>
+                        <button class="shop-buy-btn" onclick="window.buyWeapon('mace')">Купить</button>
+                    </div>
+                </div>
+            </div>
             <div class="shop-footer">
                 <span>💰 <span id="playerGoldShop">0</span></span>
                 <button onclick="window.closeShop()">Закрыть</button>
@@ -438,7 +532,7 @@ function initFloatingWindows() {
         `
             <div class="chat-messages" id="chatMessages">
                 <div class="chat-message info">✨ Добро пожаловать на Skadgar, парящий остров!</div>
-				<div class="chat-message info">🎮 Создатель: Skadga | GitHub: skadgar-rogue</div>
+                <div class="chat-message info">🎮 Создатель: Skadga | GitHub: skadgar-rogue</div>
             </div>
             <input type="text" id="chatInput" class="chat-input" placeholder="Сообщение... (Enter)">
         `
