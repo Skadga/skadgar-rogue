@@ -535,9 +535,21 @@ function drawMap() {
                     ctx.fill();
                 }
                 else if (tileType === 1) {
+                    // Земля под дерево — цвет травы
+                    ctx.fillStyle = "#4a8c3f";
+                    ctx.beginPath();
+                    ctx.moveTo(pos.x, pos.y);
+                    ctx.lineTo(pos.x + TILE_W/2, pos.y + TILE_H/2);
+                    ctx.lineTo(pos.x, pos.y + TILE_H);
+                    ctx.lineTo(pos.x - TILE_W/2, pos.y + TILE_H/2);
+                    ctx.fill();
+                    
+                    // Ствол дерева
                     ctx.fillStyle = "#5a3a2a";
                     ctx.fillRect(pos.x - 8, pos.y - 15, 16, 25);
-                    ctx.fillStyle = "#3a8c2f";
+                    
+                    // Листва — тёмно-зелёная
+                    ctx.fillStyle = "#2a6a2a";
                     ctx.beginPath();
                     ctx.ellipse(pos.x, pos.y - 18, 12, 14, 0, 0, Math.PI*2);
                     ctx.fill();
@@ -565,9 +577,21 @@ function drawMap() {
                     ctx.fill();
                 }
                 else if (tileType === 24) {
+                    // Земля под дерево — цвет травы
+                    ctx.fillStyle = "#4a8c3f";
+                    ctx.beginPath();
+                    ctx.moveTo(pos.x, pos.y);
+                    ctx.lineTo(pos.x + TILE_W/2, pos.y + TILE_H/2);
+                    ctx.lineTo(pos.x, pos.y + TILE_H);
+                    ctx.lineTo(pos.x - TILE_W/2, pos.y + TILE_H/2);
+                    ctx.fill();
+                    
+                    // Ствол
                     ctx.fillStyle = "#4a3a2a";
                     ctx.fillRect(pos.x - 6, pos.y - 20, 12, 30);
-                    ctx.fillStyle = "#2a8c2f";
+                    
+                    // Листва — тёмно-зелёная
+                    ctx.fillStyle = "#2a6a2a";
                     ctx.beginPath();
                     ctx.ellipse(pos.x, pos.y - 25, 18, 16, 0, 0, Math.PI*2);
                     ctx.fill();
